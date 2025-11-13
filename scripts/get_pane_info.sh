@@ -28,32 +28,6 @@ get_running_command() {
     echo "$CURRENT_COMMAND"
 }
 
-# Get command history for the pane
-get_command_history() {
-    local pane_index=$1
-    local history_lines=""
-
-    # Try to find pane-specific history file
-    # Users should configure: HISTFILE=~/.bash_history_${TMUX_PANE}
-    local hist_file="$HOME/.bash_history_%${pane_index}"
-
-    if [ -f "$hist_file" ]; then
-        # Get last 3 commands from pane-specific history
-        history_lines=$(tail -n 3 "$hist_file" 2>/dev/null | sed 's/^/  • /')
-    else
-        # Try default bash history
-        if [ -f "$HOME/.bash_history" ]; then
-            history_lines=$(tail -n 3 "$HOME/.bash_history" 2>/dev/null | sed 's/^/  • /')
-        fi
-    fi
-
-    if [ -z "$history_lines" ]; then
-        history_lines="  (No history available)"
-    fi
-
-    echo "$history_lines"
-}
-
 # Shorten long paths
 shorten_path() {
     local path=$1
@@ -70,15 +44,11 @@ shorten_path() {
 get_pane_info() {
     local running_cmd=$(get_running_command "$PANE_PID" "$PANE_TTY")
     local short_path=$(shorten_path "$CURRENT_PATH")
-    local history=$(get_command_history "$PANE_INDEX")
 
     # Output in a structured format (one line per field)
     echo "PANE_INDEX:$PANE_INDEX"
     echo "DIRECTORY:$short_path"
     echo "COMMAND:$running_cmd"
-    echo "HISTORY_START"
-    echo "$history"
-    echo "HISTORY_END"
 }
 
 # Execute

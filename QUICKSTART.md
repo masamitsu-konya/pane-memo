@@ -4,7 +4,18 @@
 
 ### 1. インストール
 
+**方法A: インストールスクリプトを使用（推奨）**
+
 ```bash
+curl -fsSL https://raw.githubusercontent.com/masamitsu-konya/pane-memo/main/install.sh | bash
+```
+
+**方法B: 手動インストール**
+
+```bash
+# プラグインディレクトリを作成（存在しない場合）
+mkdir -p ~/.tmux/plugins
+
 # リポジトリをクローン
 git clone https://github.com/masamitsu-konya/pane-memo.git ~/.tmux/plugins/pane-memo
 
@@ -12,39 +23,7 @@ git clone https://github.com/masamitsu-konya/pane-memo.git ~/.tmux/plugins/pane-
 echo "run-shell ~/.tmux/plugins/pane-memo/pane-memo.tmux" >> ~/.tmux.conf
 ```
 
-### 2. シェル設定を追加
-
-**Bashユーザー:**
-
-```bash
-# .bashrcに追加
-cat >> ~/.bashrc << 'EOF'
-
-# pane-memo: ペインごとの履歴トラッキング
-export HISTFILE=~/.bash_history_${TMUX_PANE}
-export PROMPT_COMMAND="history -a"
-EOF
-
-# 設定を反映
-source ~/.bashrc
-```
-
-**Zshユーザー:**
-
-```bash
-# .zshrcに追加
-cat >> ~/.zshrc << 'EOF'
-
-# pane-memo: ペインごとの履歴トラッキング
-export HISTFILE=~/.zsh_history_${TMUX_PANE}
-precmd() { history -a }
-EOF
-
-# 設定を反映
-source ~/.zshrc
-```
-
-### 3. tmuxを起動/再読み込み
+### 2. tmuxを起動/再読み込み
 
 ```bash
 # 既にtmuxセッションがある場合
@@ -53,6 +32,15 @@ tmux source-file ~/.tmux.conf
 # または新しいセッションを開始
 tmux
 ```
+
+### 3. ペイン0で監視スクリプトを起動
+
+```bash
+# tmux内でペイン0に切り替えて実行
+bash ~/.tmux/plugins/pane-memo/scripts/watch_display.sh
+```
+
+このスクリプトはペイン0で常駐して、情報を表示し続けます。
 
 ### 4. 使ってみる
 
@@ -95,19 +83,14 @@ tmux show-options -g focus-events
 tmux source-file ~/.tmux/plugins/pane-memo/pane-memo.tmux
 ```
 
-#### 履歴が表示されない場合
+#### 表示が更新されない場合
 
 ```bash
-# 履歴ファイルの場所を確認
-echo $HISTFILE
+# ペイン0で監視スクリプトが動作しているか確認
+# ペイン0に切り替えて、スクリプトが実行中か確認
 
-# シェル設定を再読み込み
-source ~/.bashrc  # または source ~/.zshrc
-
-# いくつかコマンドを実行してから再度確認
-ls
-pwd
-echo "test"
+# 再起動する場合は Ctrl+C で停止してから再実行
+bash ~/.tmux/plugins/pane-memo/scripts/watch_display.sh
 ```
 
 ### 推奨レイアウト

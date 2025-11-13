@@ -43,17 +43,9 @@ pane_info=$("$CURRENT_DIR/get_pane_info.sh" "$PANE_INDEX" "$CURRENT_PATH" "$CURR
 # Format the output
 formatted_output=$(echo "$pane_info" | "$CURRENT_DIR/format_output.sh")
 
-# Create a temporary file with the formatted output
-temp_file="/tmp/pane-memo-display-$$"
-echo "$formatted_output" > "$temp_file"
-
-# Clear pane 0 and display the information
-# We use send-keys with clear and cat to update the display
-tmux send-keys -t "$TARGET_PANE" C-c  # Cancel any running command
-tmux send-keys -t "$TARGET_PANE" C-l  # Clear screen
-tmux send-keys -t "$TARGET_PANE" "cat '$temp_file'" Enter
-
-# Clean up temp file after a short delay (allow time for display)
-(sleep 1 && rm -f "$temp_file") &
+# Write to fixed file that the watch script is monitoring
+# The watch script should be running in the target pane
+DISPLAY_FILE="/tmp/pane-memo-display"
+echo "$formatted_output" > "$DISPLAY_FILE"
 
 exit 0

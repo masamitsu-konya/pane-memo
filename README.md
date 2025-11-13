@@ -12,7 +12,6 @@
 - **Rich information display**:
   - Current working directory
   - Running command/process
-  - Last 3 command history items
 - **Beautiful formatting**: Color-coded box display with clear sections
 - **Highly configurable**: Customize target pane and display options
 - **Zero dependencies**: Pure bash script, works on any Unix-like system
@@ -23,20 +22,39 @@
 ```
 ┌──────────────────────────────────────────────────────────┐
 │ Pane 2 Information                                       │
-├──────────────────────────────────────────────────────────┤
+│──────────────────────────────────────────────────────────│
 │ Directory: /Users/username/projects/my-app               │
 │ Running:   vim                                           │
-│                                                          │
-│ Recent Commands:                                         │
-│  • npm test                                              │
-│  • git status                                            │
-│  • vim src/app.js                                        │
 └──────────────────────────────────────────────────────────┘
 ```
 
 ## Installation
 
-### Using TPM (Recommended)
+### Quick Install (Recommended)
+
+Run the installation script:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/masamitsu-konya/pane-memo/main/install.sh | bash
+```
+
+Or download and run manually:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/masamitsu-konya/pane-memo/main/install.sh -o install.sh
+bash install.sh
+```
+
+The script will automatically:
+- Create `~/.tmux/plugins` directory if needed
+- Clone the repository
+- Add configuration to `.tmux.conf`
+
+After installation:
+1. Reload tmux: `tmux source-file ~/.tmux.conf`
+2. Start watch script in pane 0: `bash ~/.tmux/plugins/pane-memo/scripts/watch_display.sh`
+
+### Using TPM
 
 1. Add plugin to your `.tmux.conf`:
 
@@ -46,11 +64,14 @@ set -g @plugin 'masamitsu-konya/pane-memo'
 
 2. Press `prefix + I` to install the plugin
 
+3. Start watch script in pane 0: `bash ~/.tmux/plugins/pane-memo/scripts/watch_display.sh`
+
 ### Manual Installation
 
-1. Clone this repository:
+1. Clone this repository (creates directory automatically):
 
 ```bash
+mkdir -p ~/.tmux/plugins
 git clone https://github.com/masamitsu-konya/pane-memo.git ~/.tmux/plugins/pane-memo
 ```
 
@@ -66,35 +87,14 @@ run-shell ~/.tmux/plugins/pane-memo/pane-memo.tmux
 tmux source-file ~/.tmux.conf
 ```
 
+4. Start the watch script in pane 0:
+
+```bash
+# In tmux, switch to pane 0 and run:
+bash ~/.tmux/plugins/pane-memo/scripts/watch_display.sh
+```
+
 ## Configuration
-
-### Required Setup for Command History
-
-To enable command history tracking, add the following to your `.bashrc` or `.zshrc`:
-
-**For Bash:**
-
-```bash
-# pane-memo: Enable per-pane history tracking
-export HISTFILE=~/.bash_history_${TMUX_PANE}
-export PROMPT_COMMAND="history -a"
-```
-
-**For Zsh:**
-
-```zsh
-# pane-memo: Enable per-pane history tracking
-export HISTFILE=~/.zsh_history_${TMUX_PANE}
-precmd() { history -a }
-```
-
-After adding these lines, restart your shell or source the file:
-
-```bash
-source ~/.bashrc  # or ~/.zshrc
-```
-
-### Optional Configuration
 
 Add these options to your `.tmux.conf`:
 
@@ -120,10 +120,6 @@ set -g @pane-memo-enabled "on"
 
 ## Troubleshooting
 
-### "No history available" is shown
-
-Make sure you've configured `HISTFILE` and `PROMPT_COMMAND` in your shell configuration file (see [Configuration](#configuration)).
-
 ### Pane 0 doesn't update
 
 1. Check that focus-events are enabled: `tmux show-options -g focus-events`
@@ -132,14 +128,16 @@ Make sure you've configured `HISTFILE` and `PROMPT_COMMAND` in your shell config
 
 ### Display is corrupted or overlapping
 
-The plugin clears the screen before displaying. If you have a command running in pane 0, it may interfere. Keep pane 0 dedicated for the display.
+Make sure the watch script is running in pane 0. The watch script should be the only thing running in pane 0 for best results.
 
 ## How It Works
 
-1. **Hook registration**: The plugin registers tmux hooks (`pane-focus-in`, `window-pane-changed`)
-2. **Event detection**: When you switch panes, tmux triggers the hooks
-3. **Information gathering**: Scripts collect current directory, running command, and history
-4. **Display update**: Formatted information is sent to pane 0 using `tmux send-keys`
+1. **Watch script**: A monitoring script runs continuously in pane 0
+2. **Hook registration**: The plugin registers tmux hooks (`pane-focus-in`, `window-pane-changed`)
+3. **Event detection**: When you switch panes, tmux triggers the hooks
+4. **Information gathering**: Scripts collect current directory and running command
+5. **File update**: Information is written to `/tmp/pane-memo-display`
+6. **Display update**: Watch script detects the file change and updates the display
 
 ## Contributing
 
@@ -181,7 +179,6 @@ Created by [Masamitsu Konya](https://github.com/masamitsu-konya)
 - **充実した情報表示**:
   - カレントディレクトリ
   - 実行中のコマンド/プロセス
-  - 直近3つのコマンド履歴
 - **美しいフォーマット**: 色分けされたボックス表示で見やすい
 - **高度な設定**: ターゲットペインや表示オプションをカスタマイズ可能
 - **依存関係ゼロ**: 純粋なbashスクリプト、あらゆるUnix系システムで動作
@@ -189,7 +186,31 @@ Created by [Masamitsu Konya](https://github.com/masamitsu-konya)
 
 ## インストール
 
-### TPMを使用する場合（推奨）
+### クイックインストール（推奨）
+
+インストールスクリプトを実行:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/masamitsu-konya/pane-memo/main/install.sh | bash
+```
+
+または手動でダウンロードして実行:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/masamitsu-konya/pane-memo/main/install.sh -o install.sh
+bash install.sh
+```
+
+スクリプトが自動的に以下を実行します:
+- `~/.tmux/plugins` ディレクトリの作成（必要な場合）
+- リポジトリのクローン
+- `.tmux.conf` への設定追加
+
+インストール後:
+1. tmuxを再読み込み: `tmux source-file ~/.tmux.conf`
+2. ペイン0で監視スクリプトを起動: `bash ~/.tmux/plugins/pane-memo/scripts/watch_display.sh`
+
+### TPMを使用する場合
 
 1. `.tmux.conf`にプラグインを追加:
 
@@ -199,11 +220,14 @@ set -g @plugin 'masamitsu-konya/pane-memo'
 
 2. `prefix + I`でプラグインをインストール
 
+3. ペイン0で監視スクリプトを起動: `bash ~/.tmux/plugins/pane-memo/scripts/watch_display.sh`
+
 ### 手動インストール
 
-1. リポジトリをクローン:
+1. リポジトリをクローン（ディレクトリは自動作成されます）:
 
 ```bash
+mkdir -p ~/.tmux/plugins
 git clone https://github.com/masamitsu-konya/pane-memo.git ~/.tmux/plugins/pane-memo
 ```
 
@@ -219,35 +243,14 @@ run-shell ~/.tmux/plugins/pane-memo/pane-memo.tmux
 tmux source-file ~/.tmux.conf
 ```
 
+4. ペイン0で監視スクリプトを起動:
+
+```bash
+# tmux内でペイン0に切り替えて実行:
+bash ~/.tmux/plugins/pane-memo/scripts/watch_display.sh
+```
+
 ## 設定
-
-### コマンド履歴トラッキングの必須設定
-
-コマンド履歴の追跡を有効にするには、`.bashrc`または`.zshrc`に以下を追加してください:
-
-**Bashの場合:**
-
-```bash
-# pane-memo: ペインごとの履歴トラッキングを有効化
-export HISTFILE=~/.bash_history_${TMUX_PANE}
-export PROMPT_COMMAND="history -a"
-```
-
-**Zshの場合:**
-
-```zsh
-# pane-memo: ペインごとの履歴トラッキングを有効化
-export HISTFILE=~/.zsh_history_${TMUX_PANE}
-precmd() { history -a }
-```
-
-追加後、シェルを再起動するか、ファイルを再読み込み:
-
-```bash
-source ~/.bashrc  # または ~/.zshrc
-```
-
-### オプション設定
 
 `.tmux.conf`に以下のオプションを追加できます:
 

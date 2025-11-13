@@ -24,8 +24,6 @@ parse_input() {
     local pane_index=""
     local directory=""
     local command=""
-    local history=""
-    local in_history=false
 
     while IFS= read -r line; do
         if [[ $line == PANE_INDEX:* ]]; then
@@ -34,16 +32,6 @@ parse_input() {
             directory="${line#DIRECTORY:}"
         elif [[ $line == COMMAND:* ]]; then
             command="${line#COMMAND:}"
-        elif [[ $line == "HISTORY_START" ]]; then
-            in_history=true
-        elif [[ $line == "HISTORY_END" ]]; then
-            in_history=false
-        elif [[ $in_history == true ]]; then
-            if [ -z "$history" ]; then
-                history="$line"
-            else
-                history="${history}\n${line}"
-            fi
         fi
     done
 
@@ -51,7 +39,6 @@ parse_input() {
     export PANE_INDEX="$pane_index"
     export DIRECTORY="$directory"
     export COMMAND="$command"
-    export HISTORY="$history"
 }
 
 # Create formatted output
@@ -70,25 +57,6 @@ format_display() {
 
     # Running command
     echo -e "${BLUE}${VERTICAL}${RESET} ${GREEN}Running:${RESET}   ${YELLOW}${COMMAND}${RESET}$(printf ' %.0s' $(seq 1 $((width - ${#COMMAND} - 13))))${BLUE}${VERTICAL}${RESET}"
-
-    echo -e "${BLUE}${VERTICAL}${RESET}$(printf ' %.0s' {1..58})${BLUE}${VERTICAL}${RESET}"
-
-    # Command history
-    echo -e "${BLUE}${VERTICAL}${RESET} ${GREEN}Recent Commands:${RESET}$(printf ' %.0s' {1..42})${BLUE}${VERTICAL}${RESET}"
-
-    # Print history lines
-    if [ -n "$HISTORY" ]; then
-        echo -e "$HISTORY" | while IFS= read -r hist_line; do
-            local display_line="$hist_line"
-            local padding=$((width - ${#hist_line} - 2))
-            if [ $padding -lt 0 ]; then
-                # Truncate if too long
-                display_line="${hist_line:0:$((width - 5))}..."
-                padding=0
-            fi
-            echo -e "${BLUE}${VERTICAL}${RESET} ${display_line}$(printf ' %.0s' $(seq 1 $padding))${BLUE}${VERTICAL}${RESET}"
-        done
-    fi
 
     echo -e "${BOLD}${BLUE}${BOTTOM_LEFT}$(printf "${HORIZONTAL}%.0s" {1..58})${BOTTOM_RIGHT}${RESET}"
     echo ""
