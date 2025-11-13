@@ -41,7 +41,7 @@
 1. Add plugin to your `.tmux.conf`:
 
 ```bash
-set -g @plugin 'your-username/pane-memo'
+set -g @plugin 'masamitsu-konya/pane-memo'
 ```
 
 2. Press `prefix + I` to install the plugin
@@ -51,7 +51,7 @@ set -g @plugin 'your-username/pane-memo'
 1. Clone this repository:
 
 ```bash
-git clone https://github.com/your-username/pane-memo.git ~/.tmux/plugins/pane-memo
+git clone https://github.com/masamitsu-konya/pane-memo.git ~/.tmux/plugins/pane-memo
 ```
 
 2. Add to your `.tmux.conf`:
@@ -149,7 +149,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/pane-memo.git
+git clone https://github.com/masamitsu-konya/pane-memo.git
 cd pane-memo
 
 # Make your changes
@@ -165,7 +165,7 @@ MIT License - see [LICENSE](LICENSE) file for details
 
 ## Author
 
-Created by [Your Name]
+Created by [Masamitsu Konya](https://github.com/masamitsu-konya)
 
 ---
 
@@ -194,7 +194,7 @@ Created by [Your Name]
 1. `.tmux.conf`にプラグインを追加:
 
 ```bash
-set -g @plugin 'your-username/pane-memo'
+set -g @plugin 'masamitsu-konya/pane-memo'
 ```
 
 2. `prefix + I`でプラグインをインストール
@@ -204,7 +204,7 @@ set -g @plugin 'your-username/pane-memo'
 1. リポジトリをクローン:
 
 ```bash
-git clone https://github.com/your-username/pane-memo.git ~/.tmux/plugins/pane-memo
+git clone https://github.com/masamitsu-konya/pane-memo.git ~/.tmux/plugins/pane-memo
 ```
 
 2. `.tmux.conf`に追加:

@@ -6,7 +6,7 @@
 
 ```bash
 # リポジトリをクローン
-git clone https://github.com/your-username/pane-memo.git ~/.tmux/plugins/pane-memo
+git clone https://github.com/masamitsu-konya/pane-memo.git ~/.tmux/plugins/pane-memo
 
 # 手動でtmux設定に追加
 echo "run-shell ~/.tmux/plugins/pane-memo/pane-memo.tmux" >> ~/.tmux.conf
