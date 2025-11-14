@@ -25,6 +25,7 @@ get_tmux_option() {
 }
 
 TARGET_PANE=$(get_tmux_option "@pane-memo-target-pane" "0")
+SHOW_PROMPTS=$(get_tmux_option "@pane-memo-show-prompts" "off")
 
 # Don't update if we're focusing the target pane itself
 if [ "$PANE_INDEX" = "$TARGET_PANE" ]; then
@@ -38,6 +39,8 @@ if ! tmux list-panes -F "#{pane_index}" | grep -q "^${TARGET_PANE}$"; then
 fi
 
 # Get pane information
+# Export SHOW_PROMPTS so get_pane_info.sh can check it
+export PANE_MEMO_SHOW_PROMPTS="$SHOW_PROMPTS"
 pane_info=$("$CURRENT_DIR/get_pane_info.sh" "$PANE_INDEX" "$CURRENT_PATH" "$CURRENT_COMMAND" "$PANE_PID" "$PANE_TTY")
 
 # Format the output
@@ -45,7 +48,15 @@ formatted_output=$(echo "$pane_info" | "$CURRENT_DIR/format_output.sh")
 
 # Write to fixed file that the watch script is monitoring
 # The watch script should be running in the target pane
+# Use atomic write (temp file + mv) to avoid race conditions
 DISPLAY_FILE="/tmp/pane-memo-display"
-echo "$formatted_output" > "$DISPLAY_FILE"
+TEMP_FILE="/tmp/pane-memo-display.$$"
+
+# Set restrictive permissions and write atomically
+(
+    umask 077
+    echo "$formatted_output" > "$TEMP_FILE"
+    mv -f "$TEMP_FILE" "$DISPLAY_FILE"
+)
 
 exit 0

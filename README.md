@@ -104,7 +104,25 @@ set -g @pane-memo-target-pane "0"
 
 # Enable/disable plugin (default: on)
 set -g @pane-memo-enabled "on"
+
+# Show Claude Code prompt history (default: off for privacy)
+# When enabled, displays the 5 most recent prompts from Claude Code sessions
+# WARNING: Prompts may contain sensitive information. Only enable in private environments.
+set -g @pane-memo-show-prompts "off"
 ```
+
+### Privacy Note
+
+The `@pane-memo-show-prompts` option is **disabled by default** to protect your privacy. Claude Code prompts may contain:
+- API keys or credentials
+- Sensitive code snippets
+- Private project information
+- Personal data
+
+Only enable this feature if:
+- You're working in a private, single-user environment
+- Your tmux session is not shared or recorded
+- You understand the privacy implications
 
 ## Usage
 
@@ -260,7 +278,25 @@ set -g @pane-memo-target-pane "0"
 
 # プラグインの有効/無効（デフォルト: on）
 set -g @pane-memo-enabled "on"
+
+# Claude Codeのプロンプト履歴を表示（デフォルト: プライバシー保護のためoff）
+# 有効にすると、Claude Codeセッションの直近5件のプロンプトを表示します
+# 警告: プロンプトには機密情報が含まれる可能性があります。プライベートな環境でのみ有効にしてください。
+set -g @pane-memo-show-prompts "off"
 ```
+
+### プライバシーに関する注意
+
+`@pane-memo-show-prompts` オプションは、プライバシー保護のため**デフォルトで無効**になっています。Claude Codeのプロンプトには以下が含まれる可能性があります：
+- APIキーや認証情報
+- 機密性の高いコードスニペット
+- プライベートなプロジェクト情報
+- 個人データ
+
+この機能を有効にするのは以下の場合のみにしてください：
+- プライベートな単一ユーザー環境で作業している
+- tmuxセッションが共有または記録されていない
+- プライバシーへの影響を理解している
 
 ## 使い方
 

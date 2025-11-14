@@ -53,17 +53,35 @@ get_claude_prompts() {
 
     # Extract last 5 prompts for this project
     # Use grep to filter by project, then take last 5, extract display field
-    # Reverse order so newest is first (using tail -r on macOS)
+    # Reverse order so newest is first (portable: tac on Linux, tail -r on macOS, awk fallback)
     local prompts=$(grep -F "\"project\":\"$project_path\"" "$history_file" 2>/dev/null | \
         tail -5 | \
-        tail -r | \
+        if command -v tac >/dev/null 2>&1; then
+            tac
+        elif tail -r /dev/null >/dev/null 2>&1; then
+            tail -r
+        else
+            awk '{a[i++]=$0} END {for (j=i-1; j>=0;) print a[j--]}'
+        fi | \
         while IFS= read -r line; do
-            # Extract display field using basic string manipulation
-            local prompt=$(echo "$line" | sed 's/.*"display":"\([^"]*\)".*/\1/' | sed 's/\\n/ /g')
+            # Extract display field - use jq if available, fallback to sed
+            local prompt=""
+            if command -v jq >/dev/null 2>&1; then
+                prompt=$(echo "$line" | jq -r '.display // empty' 2>/dev/null | sed 's/\\n/ /g')
+            fi
+
+            # Fallback to sed if jq failed or not available
+            if [ -z "$prompt" ]; then
+                # Only extract if line looks like valid JSON with display field
+                if echo "$line" | grep -q '"display"'; then
+                    prompt=$(echo "$line" | sed 's/.*"display":"\([^"]*\)".*/\1/' | sed 's/\\n/ /g')
+                fi
+            fi
+
             # If longer than 40 chars, truncate to 39 and add ...
-            if [ ${#prompt} -gt 40 ]; then
+            if [ -n "$prompt" ] && [ ${#prompt} -gt 40 ]; then
                 echo "${prompt:0:39}..."
-            else
+            elif [ -n "$prompt" ]; then
                 echo "$prompt"
             fi
         done)
@@ -87,8 +105,24 @@ get_pane_info() {
     echo "DIRECTORY:$short_path"
     echo "COMMAND:$running_cmd"
 
-    # If running Claude Code, get recent prompts
-    if [[ "$running_cmd" == "claude" ]] || [[ "$running_cmd" == "node" ]]; then
+    # If running Claude Code, get recent prompts (check more accurately)
+    local is_claude_code=false
+
+    # Method 1: Check if command is literally "claude"
+    if [[ "$running_cmd" == "claude" ]]; then
+        is_claude_code=true
+    # Method 2: Check if .claude directory exists (Claude Code project marker)
+    elif [ -d "${CURRENT_PATH}/.claude" ]; then
+        is_claude_code=true
+    # Method 3: For node processes, verify it's actually Claude Code by checking full command
+    elif [[ "$running_cmd" == "node" ]]; then
+        if ps -p "$PANE_PID" -o args= 2>/dev/null | grep -qi "claude"; then
+            is_claude_code=true
+        fi
+    fi
+
+    # Only show prompts if privacy setting allows it (default: off)
+    if [ "$is_claude_code" = true ] && [ "${PANE_MEMO_SHOW_PROMPTS:-off}" = "on" ]; then
         get_claude_prompts "$CURRENT_PATH"
     fi
 }

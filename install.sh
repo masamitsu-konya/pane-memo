@@ -41,8 +41,8 @@ if [ ! -f "$TMUX_CONF" ]; then
     touch "$TMUX_CONF"
 fi
 
-# Check if already configured
-if grep -q "pane-memo" "$TMUX_CONF"; then
+# Check if already configured (exclude comment-only lines)
+if grep -v "^[[:space:]]*#" "$TMUX_CONF" 2>/dev/null | grep -q "pane-memo"; then
     echo "pane-memo is already configured in $TMUX_CONF"
 else
     echo "Adding pane-memo to $TMUX_CONF"
