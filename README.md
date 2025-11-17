@@ -11,6 +11,7 @@
 - **Automatic updates**: Information updates instantly when you switch panes
 - **Rich information display**:
   - Current working directory
+  - Git branch name (when in a git repository)
   - Running command/process
 - **Beautiful formatting**: Color-coded box display with clear sections
 - **Highly configurable**: Customize target pane and display options
@@ -20,12 +21,30 @@
 ## Preview
 
 ```
-┌──────────────────────────────────────────────────────────┐
-│ Pane 2 Information                                       │
-│──────────────────────────────────────────────────────────│
-│ Directory: /Users/username/projects/my-app               │
-│ Running:   vim                                           │
-└──────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│ Pane 2 Info
+│────────────────────────────────────────────────────────────────────────────────────────│
+│ Dir: /Users/username/projects/my-app
+│ Git: main
+│ Run: vim
+└────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+When running Claude Code, it also displays recent prompt history:
+
+```
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│ Pane 1 Info
+│────────────────────────────────────────────────────────────────────────────────────────│
+│ Dir: /Users/username/projects/my-app
+│ Git: feature/new-feature
+│ Run: claude
+│────────────────────────────────────────────────────────────────────────────────────────│
+│ Prompts:
+│ • Add git branch display feature
+│ • Fix command detection for Claude Code
+│ • Improve installation script
+└────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ## Installation
@@ -178,7 +197,9 @@ Created by [Masamitsu Konya](https://github.com/masamitsu-konya)
 - **自動更新**: ペインを切り替えると瞬時に情報が更新されます
 - **充実した情報表示**:
   - カレントディレクトリ
+  - Gitブランチ名（gitリポジトリ内の場合）
   - 実行中のコマンド/プロセス
+  - Claude Codeの最近のプロンプト履歴（Claude Code実行時）
 - **美しいフォーマット**: 色分けされたボックス表示で見やすい
 - **高度な設定**: ターゲットペインや表示オプションをカスタマイズ可能
 - **依存関係ゼロ**: 純粋なbashスクリプト、あらゆるUnix系システムで動作
