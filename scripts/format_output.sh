@@ -23,6 +23,7 @@ VERTICAL="│"
 parse_input() {
     local pane_index=""
     local directory=""
+    local git_branch=""
     local command=""
     local prompts=""
     local in_prompts=false
@@ -32,6 +33,10 @@ parse_input() {
             pane_index="${line#PANE_INDEX:}"
         elif [[ $line == DIRECTORY:* ]]; then
             directory="${line#DIRECTORY:}"
+        elif [[ $line == GIT_BRANCH:* ]]; then
+            git_branch="${line#GIT_BRANCH:}"
+        elif [[ $line == "GIT_BRANCH_NONE" ]]; then
+            git_branch=""
         elif [[ $line == COMMAND:* ]]; then
             command="${line#COMMAND:}"
         elif [[ $line == "PROMPTS_START" ]]; then
@@ -52,6 +57,7 @@ parse_input() {
     # Export for use in formatting
     export PANE_INDEX="$pane_index"
     export DIRECTORY="$directory"
+    export GIT_BRANCH="$git_branch"
     export COMMAND="$command"
     export PROMPTS="$prompts"
 }
@@ -74,6 +80,12 @@ format_display() {
     fi
     local dir_line="${GREEN}Dir:${RESET} ${dir_display}"
     echo -e "${BLUE}${VERTICAL}${RESET} ${dir_line}"
+
+    # Git branch (if available)
+    if [ -n "$GIT_BRANCH" ]; then
+        local branch_line="${GREEN}Git:${RESET} ${CYAN}${GIT_BRANCH}${RESET}"
+        echo -e "${BLUE}${VERTICAL}${RESET} ${branch_line}"
+    fi
 
     # Running command
     local cmd_display="${COMMAND}"

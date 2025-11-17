@@ -16,8 +16,15 @@ get_running_command() {
 
     # Try to get the most recent process in the pane
     if [ -n "$tty" ]; then
-        # Get processes running on this TTY
-        local cmd=$(ps -t "$tty" -o comm= | tail -1)
+        # Get all processes running on this TTY, excluding shells
+        # Prioritize non-shell processes
+        local cmd=$(ps -t "$tty" -o comm= | grep -v -E "^-?(bash|zsh|sh)$" | head -1)
+
+        # If no non-shell process found, get the shell
+        if [ -z "$cmd" ]; then
+            cmd=$(ps -t "$tty" -o comm= | tail -1)
+        fi
+
         if [ -n "$cmd" ]; then
             echo "$cmd"
             return
@@ -37,6 +44,26 @@ shorten_path() {
         echo "...${path: -$max_length}"
     else
         echo "$path"
+    fi
+}
+
+# Get git branch name if the directory is a git repository
+get_git_branch() {
+    local dir=$1
+
+    # Check if directory is inside a git repository
+    if git -C "$dir" rev-parse --git-dir > /dev/null 2>&1; then
+        # Get current branch name
+        local branch=$(git -C "$dir" branch --show-current 2>/dev/null)
+        if [ -n "$branch" ]; then
+            echo "$branch"
+        else
+            # If in detached HEAD state, show short commit hash
+            local commit=$(git -C "$dir" rev-parse --short HEAD 2>/dev/null)
+            echo "detached@$commit"
+        fi
+    else
+        echo ""
     fi
 }
 
@@ -81,10 +108,19 @@ get_claude_prompts() {
 get_pane_info() {
     local running_cmd=$(get_running_command "$PANE_PID" "$PANE_TTY")
     local short_path=$(shorten_path "$CURRENT_PATH")
+    local git_branch=$(get_git_branch "$CURRENT_PATH")
 
     # Output in a structured format (one line per field)
     echo "PANE_INDEX:$PANE_INDEX"
     echo "DIRECTORY:$short_path"
+
+    # Output git branch if available
+    if [ -n "$git_branch" ]; then
+        echo "GIT_BRANCH:$git_branch"
+    else
+        echo "GIT_BRANCH_NONE"
+    fi
+
     echo "COMMAND:$running_cmd"
 
     # If running Claude Code, get recent prompts
